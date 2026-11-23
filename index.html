@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro trimestral de condiciones</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --primary: #1a56db;
+      --primary-hover: #1443ad;
+      --ok-bg: #ecfdf5;
+      --ok-border: #10b981;
+      --ok-text: #065f46;
+      --err-bg: #fef2f2;
+      --err-border: #ef4444;
+      --err-text: #991b1b;
+      --border: #d1d5db;
+      --text: #1f2937;
+      --muted: #6b7280;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px 14px 48px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 1.45rem; margin: 0 0 8px; }
+    .intro {
+      background: #eff6ff;
+      border-left: 4px solid var(--primary);
+      padding: 12px 14px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      margin-bottom: 18px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 1.1rem;
+      color: var(--primary);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 8px 6px;
+      border-bottom: 1px solid #eef0f3;
+      text-align: left;
+    }
+    th {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    th.num, td.num { text-align: center; width: 110px; }
+    .badge {
+      display: inline-block;
+      min-width: 30px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+      background: #e5e7eb;
+      color: #111827;
+      border-radius: 5px;
+      padding: 2px 6px;
+      margin-right: 6px;
+    }
+    input[type="number"] {
+      width: 84px;
+      padding: 8px;
+      font-size: 1rem;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+    }
+    input[type="number"]:focus {
+      outline: 2px solid var(--primary);
+      border-color: var(--primary);
+    }
+    input.invalid {
+      border-color: var(--err-border);
+      background: var(--err-bg);
+    }
+    tfoot td {
+      font-weight: 700;
+      background: #f9fafb;
+      border-bottom: none;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    button, a.btn {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 13px 18px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      flex: 1 1 260px;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+      flex: 0 1 auto;
+    }
+    .btn-secondary:hover { background: #d1d5db; }
+    .alert {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+    .alert.ok {
+      display: block;
+      background: var(--ok-bg);
+      border: 1px solid var(--ok-border);
+      color: var(--ok-text);
+    }
+    .alert.err {
+      display: block;
+      background: var(--err-bg);
+      border: 1px solid var(--err-border);
+      color: var(--err-text);
+    }
+    .output-box {
+      display: none;
+      margin-top: 14px;
+    }
+    .output-box label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 82px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #f9fafb;
+      resize: vertical;
+    }
+    @media (max-width: 480px) {
+      th.num, td.num { width: 84px; }
+      input[type="number"] { width: 68px; padding: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="pageTitle"></h1>
+    <div class="intro">
+      Escribe el número total de <strong>niñas</strong> y <strong>niños</strong> en cada rubro.
+      Si no hubo casos en alguna condición, deja <strong>0</strong>. Al terminar, presiona el botón azul para copiar tu código y pegarlo en el formulario de Google.
+    </div>
+
+    <div id="mesesContainer"></div>
+
+    <div class="actions">
+      <button type="button" class="btn-primary" id="btnGenerar">
+        Validar y copiar código de respuesta
+      </button>
+      <a id="btnPrellenar" class="btn btn-secondary" target="_blank" rel="noopener" style="display:none;">
+        Abrir Google Form prellenado
+      </a>
+      <button type="button" class="btn-secondary" id="btnLimpiar">
+        Reiniciar a 0
+      </button>
+    </div>
+
+    <div id="alerta" class="alert" role="status" aria-live="polite"></div>
+
+    <div id="outputBox" class="output-box">
+      <label for="jsonOutput">Código generado (solo lectura — no lo modifiques):</label>
+      <textarea id="jsonOutput" readonly></textarea>
+    </div>
+  </div>
+
+  <script>
+    // === CONFIGURACIÓN DEL TRIMESTRE ===
+    // Edita solo este bloque cuando cambie el trimestre.
+    const CONFIG = {
+      titulo: 'Registro trimestral de condiciones',
+      meses: [
+        { codigo: '2026-10', nombre: 'Octubre 2026' },
+        { codigo: '2026-11', nombre: 'Noviembre 2026' },
+        { codigo: '2026-12', nombre: 'Diciembre 2026' }
+      ],
+      // Opcional: pega aquí el enlace prellenado de tu Google Form hasta el "=" del campo JSON.
+      // Ejemplo: 'https://docs.google.com/forms/d/e/TU_ID/viewform?usp=pp_url&entry.123456789='
+      formPreFillBaseUrl: ''
+    };
+
+    const RUBROS = [
+      { key: 'B',  label: 'Con BAP' },
+      { key: 'D',  label: 'Con discapacidad' },
+      { key: 'A',  label: 'Con actitudes sobresalientes' },
+      { key: 'AU', label: 'Con autismo' },
+      { key: 'M',  label: 'Con situación migrante' }
+    ];
+
+    document.title = CONFIG.titulo;
+    document.getElementById('pageTitle').textContent = CONFIG.titulo;
+
+    function renderMeses() {
+      const container = document.getElementById('mesesContainer');
+      container.innerHTML = '';
+
+      CONFIG.meses.forEach((mes, idx) => {
+        const card = document.createElement('section');
+        card.className = 'card';
+
+        const rowsHtml = RUBROS.map(r => `
+          <tr>
+            <td><span class="badge">${r.key}</span>${r.label}</td>
+            <td class="num">
+              <input type="number" min="0" step="1" inputmode="numeric" value="0"
+                data-mes="${mes.codigo}" data-genero="F" data-key="${r.key}"
+                aria-label="${mes.nombre} Niñas ${r.label}">
+            </td>
+            <td class="num">
+              <input type="number" min="0" step="1" inputmode="numeric" value="0"
+                data-mes="${mes.codigo}" data-genero="M" data-key="${r.key}"
+                aria-label="${mes.nombre} Niños ${r.label}">
+            </td>
+          </tr>
+        `).join('');
+
+        card.innerHTML = `
+          <h2>${idx + 1}. ${mes.nombre}</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Condición</th>
+                <th class="num">Niñas</th>
+                <th class="num">Niños</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+            <tfoot>
+              <tr>
+                <td>Total del mes</td>
+                <td class="num" id="tot-${mes.codigo}-F">0</td>
+                <td class="num" id="tot-${mes.codigo}-M">0</td>
+              </tr>
+            </tfoot>
+          </table>
+        `;
+        container.appendChild(card);
+      });
+
+      container.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('focus', () => input.select());
+        input.addEventListener('keydown', e => {
+          if (['-', '+', 'e', 'E', '.', ','].includes(e.key)) e.preventDefault();
+        });
+        input.addEventListener('input', () => {
+          input.classList.remove('invalid');
+          actualizarTotales();
+        });
+      });
+    }
+
+    function actualizarTotales() {
+      CONFIG.meses.forEach(mes => {
+        ['F', 'M'].forEach(g => {
+          const inputs = document.querySelectorAll(
+            `input[data-mes="${mes.codigo}"][data-genero="${g}"]`
+          );
+          let suma = 0;
+          inputs.forEach(inp => {
+            const v = parseInt(inp.value, 10);
+            if (!isNaN(v) && v >= 0) suma += v;
+          });
+          document.getElementById(`tot-${mes.codigo}-${g}`).textContent = suma;
+        });
+      });
+    }
+
+    function mostrarAlerta(tipo, html) {
+      const el = document.getElementById('alerta');
+      el.className = 'alert ' + tipo;
+      el.innerHTML = html;
+    }
+
+    async function copiarTexto(texto) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(texto);
+          return true;
+        }
+      } catch (_) {}
+      const ta = document.getElementById('jsonOutput');
+      ta.focus();
+      ta.select();
+      try {
+        return document.execCommand('copy');
+      } catch (_) {
+        return false;
+      }
+    }
+
+    document.getElementById('btnGenerar').addEventListener('click', async () => {
+      const inputs = Array.from(document.querySelectorAll('input[type="number"]'));
+      let errores = 0;
+      let sumaGlobal = 0;
+
+      inputs.forEach(inp => {
+        const raw = inp.value.trim();
+        const num = Number(raw);
+        if (raw === '' || !Number.isInteger(num) || num < 0) {
+          inp.classList.add('invalid');
+          errores++;
+        } else {
+          inp.classList.remove('invalid');
+          sumaGlobal += num;
+        }
+      });
+
+      if (errores > 0) {
+        mostrarAlerta(
+          'err',
+          'Revisa las casillas marcadas en rojo: deben contener números enteros mayores o iguales a 0 (escribe 0 si no hubo casos).'
+        );
+        return;
+      }
+
+      if (sumaGlobal === 0) {
+        const ok = confirm('Todas las casillas están en 0. ¿Confirmas que no hubo ningún caso en el trimestre?');
+        if (!ok) return;
+      }
+
+      const registros = [];
+      CONFIG.meses.forEach(mes => {
+        ['F', 'M'].forEach(g => {
+          const fila = { mes: mes.codigo, genero: g };
+          RUBROS.forEach(r => {
+            const inp = document.querySelector(
+              `input[data-mes="${mes.codigo}"][data-genero="${g}"][data-key="${r.key}"]`
+            );
+            fila[r.key] = parseInt(inp.value.trim(), 10);
+          });
+          registros.push(fila);
+        });
+      });
+
+      const json = JSON.stringify(registros);
+      const outputBox = document.getElementById('outputBox');
+      const textarea = document.getElementById('jsonOutput');
+      textarea.value = json;
+      outputBox.style.display = 'block';
+
+      if (CONFIG.formPreFillBaseUrl) {
+        const btnPre = document.getElementById('btnPrellenar');
+        btnPre.href = CONFIG.formPreFillBaseUrl + encodeURIComponent(json);
+        btnPre.style.display = 'inline-flex';
+      }
+
+      const copiado = await copiarTexto(json);
+      if (copiado) {
+        mostrarAlerta(
+          'ok',
+          '<strong>¡Código copiado con éxito!</strong> Regresa a tu formulario de Google, haz clic en el campo de respuesta y presiona <strong>Pegar (Ctrl + V)</strong>.'
+        );
+      } else {
+        mostrarAlerta(
+          'ok',
+          'Código generado. Tu navegador bloqueó el copiado automático: selecciona el texto del recuadro de abajo y presiona <strong>Ctrl + C</strong>.'
+        );
+      }
+    });
+
+    document.getElementById('btnLimpiar').addEventListener('click', () => {
+      document.querySelectorAll('input[type="number"]').forEach(inp => {
+        inp.value = '0';
+        inp.classList.remove('invalid');
+      });
+      actualizarTotales();
+      document.getElementById('alerta').className = 'alert';
+      document.getElementById('outputBox').style.display = 'none';
+      document.getElementById('btnPrellenar').style.display = 'none';
+    });
+
+    renderMeses();
+  </script>
+</body>
+</html>
